@@ -1,6 +1,6 @@
 import csv
 import heapq
-from typing import Any, List, Dict, NamedTuple, Optional
+from typing import Any, Callable, List, Dict, NamedTuple, Optional
 from dataclasses import dataclass
 
 from embeddings import EmbeddingCache, default_embedding_cache, text_similarity
@@ -113,6 +113,43 @@ class Recommender:
         if result.reasons:
             return header + "\n" + "\n".join(result.reasons)
         return header
+
+def recommend_songs_tool(recommender: Recommender) -> Callable[..., List[Dict[str, Any]]]:
+    """
+    Builds the callable the agent layer (embeddings.py) calls as its
+    recommend_songs tool: takes the profile fields Gemini parsed out of a
+    free-form request, runs the real scorer, and returns plain dicts (title,
+    artist, score, reasons) so the LLM only ever sees real, computed results.
+    """
+    def _tool(
+        favorite_genre: str,
+        favorite_mood: str,
+        target_energy: float,
+        target_valence: float,
+        target_tempo_bpm: float,
+        likes_dance: bool,
+        likes_acoustic: bool,
+        k: int = 5,
+    ) -> List[Dict[str, Any]]:
+        user = UserProfile(
+            favorite_genre=favorite_genre,
+            favorite_mood=favorite_mood,
+            target_energy=float(target_energy),
+            likes_acoustic=bool(likes_acoustic),
+            likes_dance=bool(likes_dance),
+            target_valence=float(target_valence),
+            target_tempo_bpm=float(target_tempo_bpm),
+        )
+        return [
+            {
+                "title": song.title,
+                "artist": song.artist,
+                "score": round(score, 3),
+                "reasons": reasons,
+            }
+            for song, score, reasons in recommender.recommend_songs(user, k=k)
+        ]
+    return _tool
 
 def _parse_value(value: str):
     """Converts a CSV string field to int/float when possible, else leaves it as a string."""

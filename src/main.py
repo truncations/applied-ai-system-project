@@ -7,125 +7,54 @@ You will implement the functions in recommender.py:
 - load_songs
 - score_song
 - recommend_songs
+
+Requests are handled by MusicRecommendationAgent (embeddings.py): Gemini
+parses each free-form request into a profile, calls recommend_songs_tool
+(recommender.py) to get real scored results, and explains those results in
+natural language -- it never invents song data or scores itself.
 """
 
+import textwrap
 from pathlib import Path
-from tabulate import tabulate
-from recommender import load_songs, user_profile_from_dict, Recommender
+from recommender import load_songs, recommend_songs_tool, Recommender
+from embeddings import MusicRecommendationAgent
 
 project_root = Path(__file__).resolve().parent.parent
+
+# Free-form stand-ins for the old structured test profiles, covering the same
+# scenarios (straightforward matches, genre/tempo conflicts, near-ties).
+test_requests = [
+    ("Starter example", "I want upbeat, happy pop -- high energy, danceable, "
+        "not very acoustic, positive vibe, around 140 BPM."),
+    ("Conflict: genre vs tempo", "I love melancholic classical music, but I want "
+        "it high energy, danceable, very positive, and fast at 180 BPM."),
+    ("Tie-break: lofi/chill", "Lofi and chill, medium-low energy around 0.40, "
+        "tempo about 79 BPM, mood around 0.58, and I like both danceable and "
+        "acoustic-leaning tracks."),
+]
 
 def main() -> None:
     songs = load_songs(project_root / "data" / "songs.csv")
     recommender = Recommender(songs)
-
-    # Starter example profile
-    user_prefs = {
-        "genre": "pop",
-        "mood": "happy",
-        "energy":  0.90,
-        "acousticness": False,
-        "danceability": True,
-        "tempo_bpm": 140,
-        "valence": 0.7,
-    }
-
-    user_prefs_test_2 = {
-        "genre": "lofi",
-        "mood": "chill",
-        "energy": 0.20,
-        "acousticness": True,
-        "danceability": False,
-        "tempo_bpm": 70,
-        "valence": 0.4,
-    }
-
-    user_prefs_test_3 = {
-        "genre": "rock",
-        "mood": "intense",
-        "energy": 0.95,
-        "acousticness": False,
-        "danceability": False,
-        "tempo_bpm": 160,
-        "valence": 0.2,
-    }
-
-    # Genre/mood point to a slow, low-energy song ("Winter's Requiem": energy 0.25,
-    # tempo 66) but every numeric field asks for the opposite. Tests whether
-    # genre+mood match still wins despite a bad numeric fit.
-    user_prefs_conflict_genre_vs_tempo = {
-        "genre": "classical",
-        "mood": "melancholic",
-        "energy": 0.90,
-        "acousticness": False,
-        "danceability": True,
-        "tempo_bpm": 180,
-        "valence": 0.9,
-    }
-
-    # Matches "Neon Pulse Rave" (house/euphoric) on every field except
-    # acousticness is flipped. Tests whether one contradicting low-weight
-    # attribute can knock an otherwise near-perfect match out of the top spot.
-    user_prefs_conflict_impossible_combo = {
-        "genre": "house",
-        "mood": "euphoric",
-        "energy": 0.88,
-        "acousticness": True,
-        "danceability": True,
-        "tempo_bpm": 128,
-        "valence": 0.90,
-    }
-
-    # Tuned almost exactly between "Midnight Coding" and "Library Rain", which
-    # both match genre+mood equally. Tests whether ranking correctly favors
-    # the numerically closer song rather than falling back on tie order.
-    user_prefs_tiebreak_lofi_chill = {
-        "genre": "lofi",
-        "mood": "chill",
-        "energy": 0.40,
-        "acousticness": True,
-        "danceability": True,
-        "tempo_bpm": 79,
-        "valence": 0.58,
-    }
-
-    test_profiles = [
-        ("Starter example", user_prefs),
-        ("Test 2 (lofi/chill)", user_prefs_test_2),
-        ("Test 3 (rock/intense)", user_prefs_test_3),
-        ("Conflict: genre vs tempo", user_prefs_conflict_genre_vs_tempo),
-        ("Conflict: impossible combo", user_prefs_conflict_impossible_combo),
-        ("Tie-break: lofi/chill", user_prefs_tiebreak_lofi_chill),
-    ]
+    agent = MusicRecommendationAgent(recommend_tool=recommend_songs_tool(recommender))
 
     print(f"\nLoaded songs: {len(songs)}")
 
-    for label, prefs in test_profiles:
-        recommendations = recommender.recommend_songs(user_profile_from_dict(prefs), k=5)
+    for label, request in test_requests:
+        result = agent.handle_request(request)
 
         print(f"\n=== {label} ===")
         print("=" * 60)
-        print("Selected preferences:")
-        for key, value in prefs.items():
-            print(f"   {key}: {value}")
+        print(f"Request: {request}")
+        print(f"Parsed profile: {result.profile_args}")
+        print(f"\n{result.summary}\n")
 
-        table_rows = []
-        for rank, (song, score, reasons) in enumerate(recommendations, start=1):
-            visible_reasons = [r for r in reasons if not r.endswith("- ")]
-            reasons_cell = "\n".join(visible_reasons) if visible_reasons else "-"
-            table_rows.append(
-                [rank, song.title, song.artist, f"{score:.2f}", reasons_cell]
-            )
-
-        print()
-        print(
-            tabulate(
-                table_rows,
-                headers=["#", "Title", "Artist", "Score", "Reasons"],
-                tablefmt="grid",
-            )
-        )
-        print()
+        for rank, rec in enumerate(result.recommendations, start=1):
+            song_explanation = result.explanations.get(rec["title"])
+            explanation = song_explanation.text if song_explanation else "-"
+            print(f"{rank}. {rec['title']} - {rec['artist']} (score: {rec['score']:.2f})")
+            print(textwrap.fill(explanation, width=88, initial_indent="   ", subsequent_indent="   "))
+            print()
 
 
 if __name__ == "__main__":
