@@ -9,13 +9,15 @@ You will implement the functions in recommender.py:
 - recommend_songs
 """
 
+from pathlib import Path
 from tabulate import tabulate
+from recommender import load_songs, user_profile_from_dict, Recommender
 
-from src.recommender import load_songs, recommend_songs
-
+project_root = Path(__file__).resolve().parent.parent
 
 def main() -> None:
-    songs = load_songs("data/songs.csv") 
+    songs = load_songs(project_root / "data" / "songs.csv")
+    recommender = Recommender(songs)
 
     # Starter example profile
     user_prefs = {
@@ -99,7 +101,7 @@ def main() -> None:
     print(f"\nLoaded songs: {len(songs)}")
 
     for label, prefs in test_profiles:
-        recommendations = recommend_songs(prefs, songs, k=5)
+        recommendations = recommender.recommend_songs(user_profile_from_dict(prefs), k=5)
 
         print(f"\n=== {label} ===")
         print("=" * 60)
@@ -112,7 +114,7 @@ def main() -> None:
             visible_reasons = [r for r in reasons if not r.endswith("- ")]
             reasons_cell = "\n".join(visible_reasons) if visible_reasons else "-"
             table_rows.append(
-                [rank, song["title"], song["artist"], f"{score:.2f}", reasons_cell]
+                [rank, song.title, song.artist, f"{score:.2f}", reasons_cell]
             )
 
         print()
