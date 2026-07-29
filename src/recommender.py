@@ -1,7 +1,9 @@
 import csv
 import heapq
-from typing import Any, List, Dict, NamedTuple
+from typing import Any, List, Dict, NamedTuple, Optional
 from dataclasses import dataclass
+
+from embeddings import EmbeddingCache, default_embedding_cache, text_similarity
 
 @dataclass
 class Song:
@@ -85,15 +87,18 @@ class Recommender:
     OOP implementation of the recommendation logic.
     Required by tests/test_recommender.py
     """
-    def __init__(self, songs: List[Song]):
+    def __init__(self, songs: List[Song], embedding_cache: Optional[EmbeddingCache] = None):
         self.songs = songs
+        # Lazily built on first real use, not at construction, so constructing a
+        # Recommender never requires an API key/network access on its own.
+        self.embedding_cache = embedding_cache or default_embedding_cache()
 
     def recommend_songs(self, user: UserProfile, k: int = 5) -> List[Recommendation_Result]:
         """Scores all songs against the user's preferences and returns the top k, each with its score and reasons."""
         scored = (
             Recommendation_Result(song, result.score, result.reasons)
             for song in self.songs
-            for result in (score_song(user, song),)
+            for result in (score_song(user, song, self.embedding_cache),)
         )
         return heapq.nlargest(k, scored, key=lambda entry: entry.score)
 
@@ -103,7 +108,7 @@ class Recommender:
 
     def explain_recommendation(self, user: UserProfile, song: Song) -> str:
         """Returns a human-readable explanation for why a song was recommended to the user."""
-        result = score_song(user, song)
+        result = score_song(user, song, self.embedding_cache)
         header = f"'{song.title}' by {song.artist} scores {result.score:.3f} for this user's preferences."
         if result.reasons:
             return header + "\n" + "\n".join(result.reasons)
@@ -133,10 +138,20 @@ def load_songs(csv_path: str) -> List[Song]:
             songs.append(Song(**parsed_row))
     return songs
 
-def attr_score_str(data: Compare_Attr_Data) -> Attribute_Reward:
-    """Scores a string-valued attribute by whether the song's value matches the user's preference."""
+def attr_score_str(data: Compare_Attr_Data, embedding_cache: EmbeddingCache) -> Attribute_Reward:
+    """
+    Scores a string-valued attribute by embedding similarity between the song's value
+    and the user's preference. Exact matches get full points without any embedding
+    lookup; near-matches (e.g. "synthpop" vs "pop") get partial credit scaled by
+    cosine similarity instead of scoring 0.
+    """
     reward = attribute_points_and_reason_base[data.key_name]
-    return data.song_value == data.user_pref_value and reward or Attribute_Reward(0, "")
+    similarity = text_similarity(data.song_value, data.user_pref_value, embedding_cache)
+    if similarity <= 0:
+        return Attribute_Reward(0, "")
+    if similarity >= 1.0:
+        return reward
+    return Attribute_Reward(reward.points * similarity, f"{reward.reason_base} (semantic similarity: {similarity:.2f})")
 
 def attr_score_float(data: Compare_Attr_Data) -> Attribute_Reward:
     """Scores a numeric attribute by how close the song's value is to the user's preference."""
@@ -163,7 +178,7 @@ def attr_score_bool(data: Compare_Attr_Data) -> Attribute_Reward:
     else: # DOES NOT PREFER
         return Attribute_Reward(reward.points * (1 - song_value), reward.reason_base + "less")
 
-def score_song(user_prefs: UserProfile, song: Song) -> Score_Result:
+def score_song(user_prefs: UserProfile, song: Song, embedding_cache: EmbeddingCache) -> Score_Result:
     """
     Scores a single song against user preferences.
     Required by Recommender.recommend_songs() and src/main.py
@@ -183,7 +198,7 @@ def score_song(user_prefs: UserProfile, song: Song) -> Score_Result:
         for tuple_data in list_tuples:
             reward_data = None
             if key == "str":
-                reward_data = attr_score_str(tuple_data)
+                reward_data = attr_score_str(tuple_data, embedding_cache)
             elif key in ("float", "int"):
                 reward_data = attr_score_float(tuple_data)
             elif key == "bool":
