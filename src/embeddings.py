@@ -425,11 +425,17 @@ class GeminiAgentClient:
     Tries each model in `models` in order. A transient error (429 rate limit,
     503 overloaded) is retried a few times against the same model before
     moving on to the next one; any other error moves on immediately.
+
+    Remembers which model last succeeded (`_last_good_index`) and starts the
+    next call there instead of always retrying `models[0]` first -- so a
+    request that already required falling back doesn't re-pay the same
+    retry-then-fallback cost on every subsequent call.
     """
 
     def __init__(self, models: Optional[List[str]] = None):
         self._models = models or _DEFAULT_MODELS
         self._client = None  # constructed lazily so import/construction never requires an API key
+        self._last_good_index = 0
 
     def _get_client(self):
         if self._client is None:
@@ -453,8 +459,12 @@ class GeminiAgentClient:
         start = time.time()
         total_attempts = 0
 
+        # Start from the model that last succeeded, wrapping around to the
+        # rest afterward, instead of always starting at self._models[0].
+        ordered_models = self._models[self._last_good_index:] + self._models[:self._last_good_index]
+
         last_error: Optional[genai_errors.APIError] = None
-        for model_index, model in enumerate(self._models):
+        for order_index, model in enumerate(ordered_models):
             backoff = _INITIAL_BACKOFF_SECONDS
             for attempt in range(_MAX_RETRIES_PER_MODEL + 1):
                 total_attempts += 1
@@ -474,6 +484,7 @@ class GeminiAgentClient:
                         confidence=None,
                         error=None,
                     )
+                    self._last_good_index = self._models.index(model)
                     return response, log_entry
                 except genai_errors.APIError as error:
                     last_error = error
@@ -487,12 +498,12 @@ class GeminiAgentClient:
                     time.sleep(sleep_seconds)
                     backoff *= 2
 
-            if model_index < len(self._models) - 1:
-                print(f"{model} unavailable ({last_error.code}); falling back to {self._models[model_index + 1]}...")
+            if order_index < len(ordered_models) - 1:
+                print(f"{model} unavailable ({last_error.code}); falling back to {ordered_models[order_index + 1]}...")
 
         llm_logger.log(
             call_type=call_type,
-            model=self._models[-1],
+            model=ordered_models[-1],
             input_summary=_summarize_contents(contents),
             output_summary="",
             latency_seconds=time.time() - start,
@@ -534,6 +545,7 @@ class MusicRecommendationAgent:
         tool = types.Tool(function_declarations=[RECOMMEND_SONGS_DECLARATION])
 
         request_content = types.Content(role="user", parts=[types.Part(text=user_request)])
+        print("Parsing your request into a taste profile...")
         parse_response, parse_log = self._client.generate(
             contents=[request_content],
             call_type="parse",
@@ -570,6 +582,7 @@ class MusicRecommendationAgent:
                 )
             ],
         )
+        print("Writing a natural-language explanation of your recommendations...")
         explain_response, explain_log = self._client.generate(
             contents=[
                 request_content,

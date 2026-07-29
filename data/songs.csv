@@ -17,3 +17,35 @@ id,title,artist,genre,mood,energy,tempo_bpm,valence,danceability,acousticness
 16,Rainy Bar Blues,Delta Marrow,blues,sad,0.33,70,0.28,0.40,0.75
 17,Noche Caliente,Sol y Ritmo,latin,romantic,0.70,100,0.83,0.87,0.30
 18,Backroad Sunset,Cade Harlow,country,hopeful,0.58,105,0.75,0.60,0.55
+19,Electric Bloom,Wavecrest,synthwave,energetic,0.85,124,0.72,0.78,0.15
+20,Golden Hour Groove,Sable & Vine,soul,uplifting,0.62,96,0.78,0.70,0.40
+21,Midtown Funk Machine,Brass Tactics,funk,groovy,0.80,110,0.82,0.88,0.10
+22,Velvet Sky,Luna Ardor,r&b,sultry,0.55,88,0.60,0.65,0.35
+23,Riot on 5th,The Static Kids,punk,rebellious,0.95,175,0.40,0.60,0.05
+24,Island Drift,Solkissed,reggae,peaceful,0.45,78,0.70,0.55,0.50
+25,Warehouse 3AM,Kilotone,techno,euphoric,0.90,132,0.68,0.85,0.05
+26,Seoul Nights,Prism Rune,k-pop,playful,0.78,126,0.85,0.90,0.15
+27,Broken Amps,Rust Harbor,indie rock,melancholic,0.60,102,0.42,0.50,0.45
+28,Sunday Choir,New Hope Ensemble,gospel,triumphant,0.68,100,0.80,0.55,0.35
+29,Boardwalk Skank,The Offbeats,ska,energetic,0.82,150,0.75,0.80,0.12
+30,Studio 54 Forever,Mirrorball Kids,disco,euphoric,0.79,118,0.86,0.89,0.20
+31,Trap Door,Lo Cartel,trap,confident,0.75,140,0.55,0.72,0.10
+32,Floating Petals,Dream Cassette,dream pop,dreamy,0.35,85,0.55,0.45,0.65
+33,Rust and Static,Cold Foundry,industrial,angry,0.92,128,0.20,0.45,0.05
+34,Desert Caravan,Nomad Skyline,world,contemplative,0.40,92,0.55,0.48,0.70
+35,Fading Polaroids,Willow Bend,folk,nostalgic,0.38,84,0.55,0.42,0.72
+36,Champagne Static,DJ Fractal,house,euphoric,0.86,126,0.88,0.90,0.10
+37,Quiet Snowfall,Elena Voss,classical,peaceful,0.20,58,0.35,0.15,0.96
+38,Back Alley Blues,Delta Marrow,blues,sad,0.30,65,0.25,0.35,0.78
+39,Crown of Concrete,MC Ironside,hip hop,confident,0.83,98,0.70,0.86,0.07
+40,Amber Waves,Cade Harlow,country,hopeful,0.55,102,0.72,0.58,0.60
+41,Neon Cathedral,Neon Echo,synthwave,moody,0.70,108,0.45,0.68,0.25
+42,Paper Boats,Paper Lanterns,lofi,relaxed,0.30,68,0.55,0.45,0.85
+43,Iron Lung,Grave Circuit,metal,aggressive,0.96,170,0.22,0.50,0.02
+44,Salsa en la Noche,Sol y Ritmo,latin,romantic,0.75,112,0.85,0.90,0.25
+45,Hallway Echoes,Orbit Bloom,ambient,contemplative,0.22,55,0.50,0.30,0.94
+46,Corner Booth Jazz,Slow Stereo,jazz,relaxed,0.40,92,0.68,0.55,0.87
+47,Marathon Mind,Max Pulse,pop,intense,0.94,135,0.75,0.86,0.04
+48,City Lights Fade,Indigo Parade,indie pop,nostalgic,0.50,100,0.65,0.60,0.50
+49,Afterglow,LoRoom,lofi,dreamy,0.33,74,0.58,0.50,0.80
+50,Restless Static,Half Light,alternative,yearning,0.58,104,0.48,0.55,0.40
