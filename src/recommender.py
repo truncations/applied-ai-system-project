@@ -3,7 +3,10 @@ import heapq
 from typing import Any, Callable, List, Dict, NamedTuple, Optional
 from dataclasses import dataclass
 
-from embeddings import EmbeddingCache, default_embedding_cache, text_similarity
+try:
+    from src.embeddings import EmbeddingCache, default_embedding_cache, text_similarity
+except ImportError:
+    from embeddings import EmbeddingCache, default_embedding_cache, text_similarity
 
 @dataclass
 class Song:

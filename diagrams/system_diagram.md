@@ -22,7 +22,7 @@ flowchart TD
     end
 
     subgraph Data["Data Layer"]
-        D1[("data/songs.csv<br/>18-song catalog")]
+        D1[("data/songs.csv<br/>50-song catalog")]
         D2[("data/embeddings_cache.json<br/>text to vector cache")]
         D3["Gemini Embedding API<br/>(gemini-embedding-001)"]
     end
