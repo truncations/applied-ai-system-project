@@ -38,8 +38,10 @@ pip install -r requirements.txt
 
 ### 3. Setup .env for Gemini API
 
-If there is not an ".env" file in the project folder, create one like so:
-<PROVIDE IMAGE PLEASE>
+If there is not an ".env" file in the project folder, create one like so: (see .env file in the list of files in the image provided below)
+
+<img width="192" height="358" alt="sample_img" src="https://github.com/user-attachments/assets/267a1c82-49e6-4162-adf1-65f7f03818ad" />
+
 Then, navigate to https://aistudio.google.com/app/api-keys to get a Gemini API key (This program ONLY works with Gemini AI). Once a Gemini API key is generated, copy and paste the API key and write to ur .env file as shown below:
 
 ```env
