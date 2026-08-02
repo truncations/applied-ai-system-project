@@ -148,6 +148,48 @@ Here are high-energy rock picks tailored to your intense, crazy mood with maximu
    a heavy, non-acoustic rock style.
 ```
 
+### Demo Interaction
+To test the program of it's fullest capability, you can test using these steps:
+1. Run program, in src/main.
+2. User inputs the kind of music they're looking for in particular, in their words.
+    ex for Demo: "I want classical music that's slow and soothing. I don't want any singing though, and if it can be danceable that would be a plus."
+3. User waits for the results to be provided.
+4. User may observe results:
+```
+============================================================
+Request: I want classical music that's slow and soothing. I don't want any singing though, and if it can be danceable that would be a plus.
+Parsed profile: {'target_tempo_bpm': 70, 'favorite_genre': 'classical', 'likes_acoustic': True, 'target_energy': 0.25, 'target_valence': 0.5, 'favorite_mood': 'soothing', 'likes_dance': True, 'k': 5}
+
+Here are five slow, soothing instrumental tracks with classical tones and gentle rhythms to match your request.
+
+1. Quiet Snowfall - Elena Voss (score: 17.51)
+   Quiet Snowfall by Elena Voss is an exact classical match with a soothing mood, slow
+   tempo, and gentle low energy. While rich in acoustic quality, its danceable flow is
+   quite subtle.
+
+2. Winter's Requiem - Elena Voss (score: 17.05)
+   This track delivers a direct classical genre match alongside a relaxing mood and
+   ideal low energy. It brings a peaceful acoustic atmosphere, though danceability
+   remains light.
+
+3. Paper Boats - Paper Lanterns (score: 16.93)
+   Paper Boats features a soothing atmosphere and slow tempo paired with a slightly more
+   danceable rhythm. Its soft acoustic arrangement feels closely aligned with classical
+   music.
+
+4. Library Rain - Paper Lanterns (score: 16.81)
+   Offering a calm vibe, gentle tempo, and a noticeably danceable feel, Library Rain
+   makes for a relaxing listen. It carries a acoustic soundscape that sits near
+   classical traditions.
+
+5. Spacewalk Thoughts - Orbit Bloom (score: 16.78)
+   Spacewalk Thoughts combines peaceful low energy with high acoustic warmth and a slow
+   pace. Its gentle rhythm provides a subtle danceable touch to a soothing soundscape.
+```
+5. User may type "logs" to see the debugging result/process of the program magically finding songs to recommend.
+6. User may also type a new request to find new music to be recommended.
+7. Repeat step 6 until the user proceeds to quit by typing "quit", "quits", or "q".
+
 ## Design Decisions
 Some design decisions I made:
 - I kept hard-coded point values per attributes because it would prevent the AI from hallucinating scores that might not accurately represent a user's tastes. However, to reduce hallucinations, it means of some limitations such as the genre/mood having more importance always over other attributes used in consideration like energy or danceability, even if the user cares way more about those particular aspects.
