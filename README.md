@@ -157,7 +157,7 @@ Some design decisions I made:
 ## Testing Summary
 In order to prove that the AI works, we can do multiple tests that I implemented throughout this program.
 
-You can use pytest to test for some of the basic functions of recommending music, shown in tests/test_recommender.py. (Both pass).
+You can use pytest to test for some of the basic functions of recommending music, shown in `tests/test_recommender.py`. (Both pass).
 
 Additionally, the AI logs its confidence for each attribute scored and whether any errors occurred during the process of calling the Gemini API embedder/Gemini AI. You can access these logs using "logs" or "log" as the command during your next request. Overall, when I used the sample interactions, upon checking the logs, it seems that the AI felt highly more confident when the user was explicit with their requests (ex. I want a song with a tempo BPM of 100, maximum energy, maximum acousticness!). However, there were no times where the AI didn't feel "unconfident" of their prediction (the 'level' wasn't 'low').
 
